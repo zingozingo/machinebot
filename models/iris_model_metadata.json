@@ -1,0 +1,19 @@
+{
+  "model_type": "DecisionTreeClassifier",
+  "dataset": "Iris",
+  "features": [
+    "sepal length (cm)",
+    "sepal width (cm)",
+    "petal length (cm)",
+    "petal width (cm)"
+  ],
+  "target_names": [
+    "setosa",
+    "versicolor",
+    "virginica"
+  ],
+  "accuracy": 1.0,
+  "training_samples": 120,
+  "test_samples": 30,
+  "trained_at": "2025-08-24T02:14:22.308821"
+}

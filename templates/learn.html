@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learn ML - Iris Dataset</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 1.2em;
+        }
+        
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+        
+        .flower-card {
+            text-align: center;
+        }
+        
+        .flower-visual {
+            width: 200px;
+            height: 200px;
+            margin: 20px auto;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 5em;
+        }
+        
+        .setosa-visual {
+            background: linear-gradient(135deg, #ffeaa7, #fdcb6e);
+        }
+        
+        .versicolor-visual {
+            background: linear-gradient(135deg, #a29bfe, #6c5ce7);
+        }
+        
+        .virginica-visual {
+            background: linear-gradient(135deg, #fd79a8, #e84393);
+        }
+        
+        .measurements {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .measurement-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .measurement-item:last-child {
+            border-bottom: none;
+        }
+        
+        .measurement-label {
+            color: #555;
+            font-weight: 500;
+        }
+        
+        .measurement-value {
+            color: #333;
+            font-weight: bold;
+        }
+        
+        .anatomy-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        
+        .anatomy-diagram {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 20px;
+        }
+        
+        .part-explanation {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+        }
+        
+        .part-explanation h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .interactive-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        
+        .input-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .input-group label {
+            color: #555;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        .input-group input {
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn-predict {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: transform 0.2s;
+        }
+        
+        .btn-predict:hover {
+            transform: translateY(-2px);
+        }
+        
+        .prediction-result {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            display: none;
+        }
+        
+        .prediction-result.show {
+            display: block;
+        }
+        
+        .result-species {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .confidence-bar {
+            background: #e0e0e0;
+            height: 30px;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .confidence-fill {
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            transition: width 0.5s ease;
+        }
+        
+        .learning-tips {
+            background: #e8f4fd;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .learning-tips h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .tip-list {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .tip-list li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+        
+        .tip-list li:before {
+            content: "💡";
+            position: absolute;
+            left: 0;
+        }
+        
+        .visualization-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        
+        .viz-image {
+            width: 100%;
+            max-width: 800px;
+            margin: 20px auto;
+            display: block;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .decision-tree {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .tree-node {
+            margin-left: 20px;
+            padding: 5px 0;
+        }
+        
+        .tree-decision {
+            color: #667eea;
+            font-weight: bold;
+        }
+        
+        .tree-result {
+            color: #27ae60;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌸 Learn Machine Learning with Iris Flowers 🌸</h1>
+            <p class="subtitle">Understanding how computers learn to identify flower species</p>
+        </div>
+        
+        <!-- Flower Anatomy Section -->
+        <div class="anatomy-section">
+            <h2>🌺 Understanding Flower Anatomy</h2>
+            <p>Before we dive into machine learning, let's understand what we're measuring:</p>
+            
+            <div class="anatomy-diagram">
+                <div class="part-explanation">
+                    <h3>Sepals</h3>
+                    <p>The green, leaf-like parts that protect the flower bud before it opens.</p>
+                    <ul>
+                        <li><strong>Sepal Length:</strong> Measured from base to tip</li>
+                        <li><strong>Sepal Width:</strong> Measured at the widest point</li>
+                    </ul>
+                </div>
+                <div class="part-explanation">
+                    <h3>Petals</h3>
+                    <p>The colorful parts that attract pollinators like bees and butterflies.</p>
+                    <ul>
+                        <li><strong>Petal Length:</strong> Measured from base to tip</li>
+                        <li><strong>Petal Width:</strong> Measured at the widest point</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Species Cards -->
+        <div class="content-grid">
+            <div class="card flower-card">
+                <h2>Iris Setosa</h2>
+                <div class="flower-visual setosa-visual">🌼</div>
+                <div class="measurements">
+                    <div class="measurement-item">
+                        <span class="measurement-label">Typical Petal Length:</span>
+                        <span class="measurement-value">1.0 - 1.9 cm</span>
+                    </div>
+                    <div class="measurement-item">
+                        <span class="measurement-label">Typical Petal Width:</span>
+                        <span class="measurement-value">0.1 - 0.6 cm</span>
+                    </div>
+                    <div class="measurement-item">
+                        <span class="measurement-label">Typical Sepal Length:</span>
+                        <span class="measurement-value">4.3 - 5.8 cm</span>
+                    </div>
+                    <div class="measurement-item">
+                        <span class="measurement-label">Typical Sepal Width:</span>
+                        <span class="measurement-value">2.3 - 4.4 cm</span>
+                    </div>
+                </div>
+                <p><strong>Key Feature:</strong> Smallest petals - easy to identify!</p>
+            </div>
+            
+            <div class="card flower-card">
+                <h2>Iris Versicolor</h2>
+                <div class="flower-visual versicolor-visual">🌺</div>
+                <div class="measurements">
+                    <div class="measurement-item">
+                        <span class="measurement-label">Typical Petal Length:</span>
+                        <span class="measurement-value">3.0 - 5.1 cm</span>
+                    </div>
+                    <div class="measurement-item">
+                        <span class="measurement-label">Typical Petal Width:</span>
+                        <span class="measurement-value">1.0 - 1.8 cm</span>
+                    </div>
+                    <div class="measurement-item">
+                        <span class="measurement-label">Typical Sepal Length:</span>
+                        <span class="measurement-value">4.9 - 7.0 cm</span>
+                    </div>
+                    <div class="measurement-item">
+                        <span class="measurement-label">Typical Sepal Width:</span>
+                        <span class="measurement-value">2.0 - 3.4 cm</span>
+                    </div>
+                </div>
+                <p><strong>Key Feature:</strong> Medium-sized everything - the "middle child"</p>
+            </div>
+            
+            <div class="card flower-card">
+                <h2>Iris Virginica</h2>
+                <div class="flower-visual virginica-visual">🌷</div>
+                <div class="measurements">
+                    <div class="measurement-item">
+                        <span class="measurement-label">Typical Petal Length:</span>
+                        <span class="measurement-value">4.5 - 6.9 cm</span>
+                    </div>
+                    <div class="measurement-item">
+                        <span class="measurement-label">Typical Petal Width:</span>
+                        <span class="measurement-value">1.4 - 2.5 cm</span>
+                    </div>
+                    <div class="measurement-item">
+                        <span class="measurement-label">Typical Sepal Length:</span>
+                        <span class="measurement-value">4.9 - 7.9 cm</span>
+                    </div>
+                    <div class="measurement-item">
+                        <span class="measurement-label">Typical Sepal Width:</span>
+                        <span class="measurement-value">2.2 - 3.8 cm</span>
+                    </div>
+                </div>
+                <p><strong>Key Feature:</strong> Largest petals - the giants of the group</p>
+            </div>
+        </div>
+        
+        <!-- Interactive Prediction -->
+        <div class="interactive-section">
+            <h2>🔮 Try It Yourself!</h2>
+            <p>Enter flower measurements to see which species the model predicts:</p>
+            
+            <div class="input-grid">
+                <div class="input-group">
+                    <label for="sepal-length">Sepal Length (cm)</label>
+                    <input type="number" id="sepal-length" step="0.1" value="5.1">
+                </div>
+                <div class="input-group">
+                    <label for="sepal-width">Sepal Width (cm)</label>
+                    <input type="number" id="sepal-width" step="0.1" value="3.5">
+                </div>
+                <div class="input-group">
+                    <label for="petal-length">Petal Length (cm)</label>
+                    <input type="number" id="petal-length" step="0.1" value="1.4">
+                </div>
+                <div class="input-group">
+                    <label for="petal-width">Petal Width (cm)</label>
+                    <input type="number" id="petal-width" step="0.1" value="0.2">
+                </div>
+            </div>
+            
+            <button class="btn-predict" onclick="makePrediction()">Identify Flower Species</button>
+            
+            <div id="prediction-result" class="prediction-result">
+                <div class="result-species" id="result-species">Predicted: Setosa</div>
+                <div class="confidence-bar">
+                    <div class="confidence-fill" id="confidence-fill" style="width: 0%">0%</div>
+                </div>
+                <div id="result-explanation"></div>
+            </div>
+            
+            <div class="learning-tips">
+                <h3>🎯 Quick Prediction Tips:</h3>
+                <ul class="tip-list">
+                    <li>Petal length < 2 cm → Almost certainly Setosa!</li>
+                    <li>Petal length 3-5 cm → Likely Versicolor</li>
+                    <li>Petal length > 5 cm → Probably Virginica</li>
+                    <li>When in doubt, petal measurements are more reliable than sepal</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- How ML Works -->
+        <div class="anatomy-section">
+            <h2>🤖 How Machine Learning Works</h2>
+            
+            <div class="decision-tree">
+                <div>IF petal_length < 2.5 cm:</div>
+                <div class="tree-node tree-result">→ SETOSA (100% confident)</div>
+                <div>ELSE:</div>
+                <div class="tree-node">IF petal_width < 1.75 cm:</div>
+                <div class="tree-node tree-node tree-result">→ VERSICOLOR (high confidence)</div>
+                <div class="tree-node">ELSE:</div>
+                <div class="tree-node tree-node tree-result">→ VIRGINICA (high confidence)</div>
+            </div>
+            
+            <p style="margin-top: 20px;">The model learned these rules by analyzing 150 flower samples and finding the best "splitting points" that separate the species!</p>
+        </div>
+        
+        <!-- Visualization Section -->
+        <div class="visualization-section">
+            <h2>📊 Data Visualization</h2>
+            <p>Here's how the three species look when we plot their measurements:</p>
+            <img src="/static/iris_exploration.png" alt="Iris Data Visualization" class="viz-image" onerror="this.style.display='none'">
+            <p style="text-align: center; color: #666; margin-top: 10px;">
+                <em>Run `python src/data_explorer.py` to generate these visualizations</em>
+            </p>
+        </div>
+        
+        <!-- What We've Learned -->
+        <div class="card">
+            <h2>✅ What We've Learned</h2>
+            <ul style="line-height: 1.8;">
+                <li>Machine Learning finds patterns in data (like flower measurements)</li>
+                <li>Training means showing the computer many examples with correct answers</li>
+                <li>The model learns decision rules to classify new examples</li>
+                <li>Different features (measurements) have different importance</li>
+                <li>Simple models can achieve high accuracy on well-separated data</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        async function makePrediction() {
+            const sepalLength = parseFloat(document.getElementById('sepal-length').value);
+            const sepalWidth = parseFloat(document.getElementById('sepal-width').value);
+            const petalLength = parseFloat(document.getElementById('petal-length').value);
+            const petalWidth = parseFloat(document.getElementById('petal-width').value);
+            
+            const features = [sepalLength, sepalWidth, petalLength, petalWidth];
+            
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ features: features })
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    const species = ['Setosa', 'Versicolor', 'Virginica'][data.prediction];
+                    const confidence = Math.max(...data.probabilities) * 100;
+                    
+                    document.getElementById('result-species').textContent = `Predicted: ${species}`;
+                    document.getElementById('confidence-fill').style.width = `${confidence}%`;
+                    document.getElementById('confidence-fill').textContent = `${confidence.toFixed(1)}%`;
+                    
+                    // Add explanation
+                    let explanation = '';
+                    if (petalLength < 2.5) {
+                        explanation = 'The small petal length (< 2.5 cm) is a clear indicator of Setosa!';
+                    } else if (petalLength < 4.5) {
+                        explanation = 'The medium petal length suggests Versicolor.';
+                    } else {
+                        explanation = 'The large petal length indicates Virginica.';
+                    }
+                    
+                    document.getElementById('result-explanation').innerHTML = `
+                        <p style="margin-top: 15px; color: #666;">
+                            <strong>Why?</strong> ${explanation}
+                        </p>
+                    `;
+                    
+                    document.getElementById('prediction-result').classList.add('show');
+                } else {
+                    alert('Error: ' + (data.error || 'Failed to make prediction'));
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+        
+        // Add some interactivity - preset values for each species
+        function setExampleValues(species) {
+            const examples = {
+                'setosa': [5.1, 3.5, 1.4, 0.2],
+                'versicolor': [5.7, 2.9, 4.2, 1.3],
+                'virginica': [6.2, 2.8, 4.8, 1.8]
+            };
+            
+            const values = examples[species];
+            document.getElementById('sepal-length').value = values[0];
+            document.getElementById('sepal-width').value = values[1];
+            document.getElementById('petal-length').value = values[2];
+            document.getElementById('petal-width').value = values[3];
+        }
+    </script>
+</body>
+</html>

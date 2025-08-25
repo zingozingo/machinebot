@@ -1,0 +1,16 @@
+# Web Framework
+Flask==3.0.0
+python-dotenv==1.0.0
+
+# Machine Learning
+scikit-learn==1.5.2
+numpy==2.2.1
+pandas==2.2.3
+joblib==1.4.2
+
+# Data Visualization (for future use)
+matplotlib==3.10.0
+seaborn==0.13.2
+
+# Development Tools
+ipython==8.31.0

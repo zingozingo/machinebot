@@ -1,0 +1,32 @@
+{
+  "model_type": "random_forest",
+  "feature_names": [
+    "feature_1",
+    "feature_2",
+    "feature_3",
+    "feature_4"
+  ],
+  "metrics": {
+    "cv_mean": 0.8087500000000001,
+    "cv_std": 0.01837117307087381,
+    "accuracy": 0.825,
+    "precision": 0.8251354877559213,
+    "recall": 0.825,
+    "f1": 0.8248816353115057,
+    "confusion_matrix": [
+      [
+        87,
+        16
+      ],
+      [
+        19,
+        78
+      ]
+    ]
+  },
+  "timestamp": "2025-08-24T01:06:03.606982",
+  "config": {
+    "test_size": 0.2,
+    "random_state": 42
+  }
+}
