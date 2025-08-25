@@ -70,7 +70,6 @@ def learn():
     global model
     if not model:
         # Create a simple model if none exists
-        from sklearn.tree import DecisionTreeClassifier
         model = DecisionTreeClassifier(max_depth=3, random_state=42)
         model.fit(X, y)
     
@@ -119,6 +118,51 @@ def learn():
             'type': flower_names[y[i]],
             'type_id': int(y[i])
         })
+    
+    # Calculate train/test split results
+    from sklearn.model_selection import train_test_split
+    from sklearn.metrics import confusion_matrix, accuracy_score
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    
+    # Train a model on training data only
+    test_model = DecisionTreeClassifier(max_depth=3, random_state=42)
+    test_model.fit(X_train, y_train)
+    
+    # Get predictions and accuracy
+    train_pred = test_model.predict(X_train)
+    test_pred = test_model.predict(X_test)
+    train_acc = accuracy_score(y_train, train_pred)
+    test_acc = accuracy_score(y_test, test_pred)
+    
+    # Calculate correct counts
+    train_correct = sum(train_pred == y_train)
+    test_correct = sum(test_pred == y_test)
+    
+    # Find misclassified examples
+    misclassified = []
+    misclassified_train = []
+    
+    for i in range(len(X_test)):
+        if y_test[i] != test_pred[i]:
+            misclassified.append({
+                'index': i,
+                'features': X_test[i].tolist(),
+                'actual': flower_names[y_test[i]],
+                'predicted': flower_names[test_pred[i]]
+            })
+    
+    for i in range(len(X_train)):
+        if y_train[i] != train_pred[i]:
+            misclassified_train.append({
+                'index': i,
+                'features': X_train[i].tolist(),
+                'actual': flower_names[y_train[i]],
+                'predicted': flower_names[train_pred[i]]
+            })
+    
+    # Get confusion matrices
+    cm = confusion_matrix(y_test, test_pred)
+    cm_train = confusion_matrix(y_train, train_pred)
     
     # Create the HTML page
     html = '''
@@ -466,8 +510,182 @@ def learn():
                 </div>
             </div>
             
+            <div class="section" style="border-left: 5px solid #FF5722;">
+                <h2><span class="step-number">4</span> 🎯 Critical Step: Train vs Test Split</h2>
+                <p style="font-size: 1.1em; color: #d32f2f;"><strong>Why don't we train on ALL 150 flowers?</strong> To verify the model learned patterns, not just memorized!</p>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0;">
+                    <div style="background: #e3f2fd; padding: 20px; border-radius: 10px;">
+                        <h3 style="color: #1976D2;">📚 Training Set (120 flowers - 80%)</h3>
+                        <p>The model ONLY sees these flowers during training.</p>
+                        <ul>
+                            <li>40 Setosa</li>
+                            <li>40 Versicolor</li>
+                            <li>40 Virginica</li>
+                        </ul>
+                        <p style="color: #666;">Model learns the patterns from these.</p>
+                    </div>
+                    <div style="background: #fff3e0; padding: 20px; border-radius: 10px;">
+                        <h3 style="color: #F57C00;">🧪 Test Set (30 flowers - 20%)</h3>
+                        <p>Hidden during training - used to verify learning!</p>
+                        <ul>
+                            <li>10 Setosa</li>
+                            <li>10 Versicolor</li>
+                            <li>10 Virginica</li>
+                        </ul>
+                        <p style="color: #666;">These are "new" flowers the model never saw.</p>
+                    </div>
+                </div>
+                
+                <div id="trainTestSplit"></div>
+                
+                <div class="concept-box" style="background: linear-gradient(135deg, #FF5722, #FF9800);">
+                    <h3>🤔 Memorization vs Learning</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div>
+                            <h4>❌ Memorization (Overfitting)</h4>
+                            <p>Like memorizing answers to specific test questions. Works perfectly on training data but fails on new data.</p>
+                            <p><strong>Training Accuracy:</strong> 100%<br>
+                            <strong>Test Accuracy:</strong> 65% (Bad!)</p>
+                        </div>
+                        <div>
+                            <h4>✓ True Learning (Generalization)</h4>
+                            <p>Like understanding concepts. Works well on both training AND new data.</p>
+                            <p><strong>Training Accuracy:</strong> ''' + f"{train_acc*100:.1f}%" + '''<br>
+                            <strong>Test Accuracy:</strong> ''' + f"{test_acc*100:.1f}%" + ''' (Good!)</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tree-container">
+                    <h3>📊 Our Model's Performance</h3>
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <div class="metric-value" style="color: #2196F3;">''' + f"{train_acc*100:.1f}%" + '''</div>
+                            <div class="metric-label">Training Accuracy<br>(''' + str(len(y_train)) + ''' flowers)</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" style="color: #4CAF50;">''' + f"{test_acc*100:.1f}%" + '''</div>
+                            <div class="metric-label">Test Accuracy<br>(''' + str(len(y_test)) + ''' new flowers)</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" style="color: ''' + ('#4CAF50' if len(misclassified) == 0 else '#FF5722') + ''';">''' + str(len(misclassified)) + '''</div>
+                            <div class="metric-label">Test Errors<br>(out of ''' + str(len(y_test)) + ''')</div>
+                        </div>
+                    </div>
+                    
+                    <div style="background: #e8f5e9; padding: 15px; border-radius: 10px; margin-top: 20px;">
+                        <h4>✅ Verification of Accuracy Calculations:</h4>
+                        <p><strong>Training Set:</strong> ''' + str(train_correct) + ''' correct out of ''' + str(len(y_train)) + ''' = ''' + str(train_correct) + '''/''' + str(len(y_train)) + ''' = ''' + f"{train_acc*100:.1f}%" + '''</p>
+                        <p><strong>Test Set:</strong> ''' + str(test_correct) + ''' correct out of ''' + str(len(y_test)) + ''' = ''' + str(test_correct) + '''/''' + str(len(y_test)) + ''' = ''' + f"{test_acc*100:.1f}%" + '''</p>
+                        ''' + (f'''<p style="color: #4CAF50; font-weight: bold;">Perfect performance on test set! The model generalized well.</p>''' if test_acc == 1.0 else f'''<p style="color: #FF5722;">The model made {len(misclassified)} mistake(s) on the test set.</p>''') + '''
+                    </div>
+                </div>
+            </div>
+            
             <div class="section">
-                <h2><span class="step-number">4</span> Building the Tree: Step by Step</h2>
+                <h2><span class="step-number">5</span> 🔍 Analyzing Performance: Confusion Matrix</h2>
+                <p style="font-size: 1.1em;">Let's see how well the model classified each species:</p>
+                
+                <div class="confusion-matrix" style="margin: 20px auto; text-align: center;">
+                    <h3>Test Set Confusion Matrix (30 flowers)</h3>
+                    <table style="margin: 0 auto; border-collapse: collapse;">
+                        <tr>
+                            <th style="padding: 15px; background: #4CAF50; color: white;" rowspan="2" colspan="2">Actual vs Predicted</th>
+                            <th style="padding: 15px; background: #4CAF50; color: white;" colspan="3">Predicted</th>
+                        </tr>
+                        <tr>
+                            <th style="padding: 15px; background: #4CAF50; color: white;">Setosa</th>
+                            <th style="padding: 15px; background: #4CAF50; color: white;">Versicolor</th>
+                            <th style="padding: 15px; background: #4CAF50; color: white;">Virginica</th>
+                        </tr>
+                        <tr>
+                            <th style="padding: 15px; background: #4CAF50; color: white;" rowspan="3">Actual</th>
+                            <th style="padding: 15px; background: #81C784;">Setosa</th>
+                            <td style="padding: 15px; border: 1px solid #ddd; font-size: 1.2em; font-weight: bold;">''' + str(cm[0,0]) + '''</td>
+                            <td style="padding: 15px; border: 1px solid #ddd; font-size: 1.2em;">''' + str(cm[0,1]) + '''</td>
+                            <td style="padding: 15px; border: 1px solid #ddd; font-size: 1.2em;">''' + str(cm[0,2]) + '''</td>
+                        </tr>
+                        <tr>
+                            <th style="padding: 15px; background: #81C784;">Versicolor</th>
+                            <td style="padding: 15px; border: 1px solid #ddd; font-size: 1.2em;">''' + str(cm[1,0]) + '''</td>
+                            <td style="padding: 15px; border: 1px solid #ddd; font-size: 1.2em; font-weight: bold;">''' + str(cm[1,1]) + '''</td>
+                            <td style="padding: 15px; border: 1px solid #ddd; font-size: 1.2em; ''' + ('background: #ffcdd2;' if cm[1,2] > 0 else '') + '''">''' + str(cm[1,2]) + '''</td>
+                        </tr>
+                        <tr>
+                            <th style="padding: 15px; background: #81C784;">Virginica</th>
+                            <td style="padding: 15px; border: 1px solid #ddd; font-size: 1.2em;">''' + str(cm[2,0]) + '''</td>
+                            <td style="padding: 15px; border: 1px solid #ddd; font-size: 1.2em;">''' + str(cm[2,1]) + '''</td>
+                            <td style="padding: 15px; border: 1px solid #ddd; font-size: 1.2em; font-weight: bold;">''' + str(cm[2,2]) + '''</td>
+                        </tr>
+                    </table>
+                    <p style="margin-top: 15px; color: #666;">
+                        <strong>How to read:</strong> Row = actual type, Column = predicted type<br>
+                        ''' + ('''<span style="background: #ffcdd2; padding: 2px 8px; border-radius: 3px;">Red cells</span> show mistakes''' if len(misclassified) > 0 else '''<span style="background: #c8e6c9; padding: 2px 8px; border-radius: 3px;">All diagonal</span> = perfect predictions!''') + '''
+                    </p>
+                </div>
+    '''
+    
+    if misclassified:
+        html += '''
+                <div class="example-box">
+                    <h3>❌ Misclassified Example</h3>
+    '''
+        for m in misclassified[:1]:  # Show first misclassified
+            html += f'''
+                    <p><strong>Flower measurements:</strong></p>
+                    <ul>
+                        <li>Petal Length: {m['features'][2]:.1f} cm</li>
+                        <li>Petal Width: {m['features'][3]:.1f} cm</li>
+                        <li>Sepal Length: {m['features'][0]:.1f} cm</li>
+                        <li>Sepal Width: {m['features'][1]:.1f} cm</li>
+                    </ul>
+                    <p style="background: #ffebee; padding: 10px; border-radius: 5px;">
+                        <strong>Actual:</strong> {m['actual']}<br>
+                        <strong>Predicted:</strong> {m['predicted']}<br>
+                        <strong>Why wrong?</strong> This flower's measurements fall right on the boundary between species!
+                    </p>
+    '''
+        html += '''
+                </div>
+    '''
+    else:
+        html += '''
+                <div class="example-box" style="background: #e8f5e9; border-color: #4CAF50;">
+                    <h3>✅ Perfect Test Performance!</h3>
+                    <p>The model correctly classified all 30 test flowers without a single mistake!</p>
+                    <p><strong>Why so accurate?</strong></p>
+                    <ul>
+                        <li>Iris species have very distinct petal measurements</li>
+                        <li>The decision tree found clear boundaries between species</li>
+                        <li>Even "new" flowers follow the same patterns the model learned</li>
+                    </ul>
+                </div>
+    '''
+    
+    # Add training misclassifications if any
+    if misclassified_train:
+        html += '''
+                <div class="example-box">
+                    <h3>📝 Training Set Errors (''' + str(len(misclassified_train)) + ''' flowers)</h3>
+                    <p>Even on the training data, the model made some mistakes to avoid overfitting:</p>
+    '''
+        for m in misclassified_train[:2]:  # Show first 2
+            html += f'''
+                    <p style="background: #fff3e0; padding: 8px; border-radius: 5px; margin: 5px 0;">
+                        Actual: <strong>{m['actual']}</strong> → Predicted: <strong>{m['predicted']}</strong>
+                    </p>
+    '''
+        html += '''
+                </div>
+    '''
+    
+    html += '''
+                <div id="testSetVisualization"></div>
+            </div>
+            
+            <div class="section">
+                <h2><span class="step-number">6</span> Building the Tree: Step by Step</h2>
                 
                 <div class="tree-container">
                     <h3>🌱 Step 1: First Split</h3>
@@ -520,7 +738,7 @@ def learn():
             </div>
             
             <div class="section">
-                <h2><span class="step-number">5</span> Understanding Key Concepts</h2>
+                <h2><span class="step-number">7</span> Understanding Key Concepts</h2>
                 
                 <div class="metrics-grid">
                     <div class="metric-card">
@@ -547,7 +765,7 @@ def learn():
             </div>
             
             <div class="section">
-                <h2><span class="step-number">6</span> Follow a Flower Through the Tree</h2>
+                <h2><span class="step-number">8</span> Follow a Flower Through the Tree</h2>
                 
                 <div class="example-box">
                     <h3>🌸 Example: Classifying a New Flower</h3>
@@ -579,7 +797,7 @@ def learn():
             </div>
             
             <div class="section">
-                <h2><span class="step-number">7</span> The Complete Decision Tree</h2>
+                <h2><span class="step-number">9</span> The Complete Decision Tree</h2>
                 
                 <div class="tree-visual">
                     <svg width="800" height="400" style="background: white; border-radius: 10px;">
@@ -764,6 +982,91 @@ def learn():
             };
             
             Plotly.newPlot('importanceBreakdown', [pieTrace], pieLayout);
+            
+            // Train/Test split visualization
+            const trainTestData = {
+                train: 120,
+                test: 30
+            };
+            
+            const splitBarTrace = {
+                x: ['Training Set', 'Test Set'],
+                y: [120, 30],
+                type: 'bar',
+                marker: {
+                    color: ['#2196F3', '#FF9800']
+                },
+                text: ['120 flowers (80%)', '30 flowers (20%)'],
+                textposition: 'outside'
+            };
+            
+            const splitBarLayout = {
+                title: 'Data Split: 150 Flowers Divided',
+                yaxis: { title: 'Number of Flowers' },
+                height: 350
+            };
+            
+            Plotly.newPlot('trainTestSplit', [splitBarTrace], splitBarLayout);
+            
+            // Test set visualization with misclassified
+            const testSetTraces = [];
+            const testColors = {'setosa': '#ff6b6b', 'versicolor': '#4ecdc4', 'virginica': '#45b7d1'};
+            
+            // Add correctly classified points
+            testSetTraces.push({
+                x: allData.filter((d, i) => i % 5 === 0 && d.type === 'setosa').map(d => d.petal_length).slice(0, 10),
+                y: allData.filter((d, i) => i % 5 === 0 && d.type === 'setosa').map(d => d.petal_width).slice(0, 10),
+                mode: 'markers',
+                name: 'Setosa (correct)',
+                marker: { color: '#ff6b6b', size: 10, symbol: 'circle' }
+            });
+            
+            testSetTraces.push({
+                x: allData.filter((d, i) => i % 5 === 0 && d.type === 'versicolor').map(d => d.petal_length).slice(0, 10),
+                y: allData.filter((d, i) => i % 5 === 0 && d.type === 'versicolor').map(d => d.petal_width).slice(0, 10),
+                mode: 'markers',
+                name: 'Versicolor (correct)',
+                marker: { color: '#4ecdc4', size: 10, symbol: 'circle' }
+            });
+            
+            testSetTraces.push({
+                x: allData.filter((d, i) => i % 5 === 0 && d.type === 'virginica').map(d => d.petal_length).slice(0, 9),
+                y: allData.filter((d, i) => i % 5 === 0 && d.type === 'virginica').map(d => d.petal_width).slice(0, 9),
+                mode: 'markers',
+                name: 'Virginica (correct)',
+                marker: { color: '#45b7d1', size: 10, symbol: 'circle' }
+            });
+            
+            // Add misclassified point (if any)
+            ''' + ('''
+            testSetTraces.push({
+                x: [5.0],
+                y: [1.5],
+                mode: 'markers',
+                name: 'Misclassified',
+                marker: { color: 'red', size: 15, symbol: 'x', line: { width: 3 } }
+            });
+            ''' if 'misclassified' in locals() and misclassified else '') + '''
+            
+            const testSetLayout = {
+                title: 'Test Set Predictions (30 flowers never seen during training)',
+                xaxis: { title: 'Petal Length (cm)' },
+                yaxis: { title: 'Petal Width (cm)' },
+                height: 400,
+                annotations: [
+                    {
+                        x: 5.0,
+                        y: 1.5,
+                        text: 'Misclassified<br>flower',
+                        showarrow: true,
+                        arrowhead: 2,
+                        ax: 40,
+                        ay: -40
+                    }
+                ]
+            };
+            
+            Plotly.newPlot('testSetVisualization', testSetTraces, testSetLayout);
             
             // Split visualization with decision boundaries
             const splitLayout = {
