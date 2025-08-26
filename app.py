@@ -229,21 +229,37 @@ def learn():
             
             <!-- 2. How the Algorithm Works -->
             <div class="section">
-                <h2>2. Finding the Best Split</h2>
-                <p>The algorithm finds the feature and threshold that best separates the classes:</p>
+                <h2>2. Finding the Best Split - The Math</h2>
+                <p>The algorithm uses <strong>entropy</strong> to measure disorder and finds splits that maximize <strong>information gain</strong>:</p>
                 
                 <div class="formula">
-                    <strong>Initial State:</strong> 150 flowers (50 of each type)<br>
-                    <strong>Entropy:</strong> H = -Σ(p × log₂(p)) = 1.585 bits (maximum disorder)<br><br>
+                    <strong>Step 1: Calculate Initial Entropy</strong><br>
+                    Dataset: 150 flowers (50 Setosa, 50 Versicolor, 50 Virginica)<br>
+                    Probabilities: p₁ = 50/150 = 1/3, p₂ = 1/3, p₃ = 1/3<br><br>
                     
-                    <strong>Best Split Found:</strong> Petal Length ≤ 2.5<br>
-                    • Left (≤2.5): 50 flowers, all Setosa → Entropy = 0<br>
-                    • Right (>2.5): 100 flowers, mixed → Entropy = 1.0<br><br>
+                    <strong>Entropy formula:</strong> H = -Σ(pᵢ × log₂(pᵢ))<br>
+                    H = -(1/3 × log₂(1/3) + 1/3 × log₂(1/3) + 1/3 × log₂(1/3))<br>
+                    H = -(1/3 × (-1.585) + 1/3 × (-1.585) + 1/3 × (-1.585))<br>
+                    H = -(-1.585) = <strong>1.585 bits</strong> (maximum disorder)<br><br>
                     
-                    <strong>Information Gain:</strong> 1.585 - (50/150 × 0 + 100/150 × 1.0) = 0.918 bits
+                    <strong>Step 2: Try Split on Petal Length ≤ 2.5</strong><br>
+                    • Left branch (≤2.5): 50 flowers, ALL are Setosa<br>
+                    &nbsp;&nbsp;Entropy_left = -(1.0 × log₂(1.0)) = 0 bits (pure!)<br>
+                    • Right branch (>2.5): 100 flowers (0 Setosa, 50 Versicolor, 50 Virginica)<br>
+                    &nbsp;&nbsp;Entropy_right = -(0.5 × log₂(0.5) + 0.5 × log₂(0.5))<br>
+                    &nbsp;&nbsp;Entropy_right = -(0.5 × (-1) + 0.5 × (-1)) = 1.0 bits<br><br>
+                    
+                    <strong>Step 3: Calculate Information Gain</strong><br>
+                    Weighted average entropy after split:<br>
+                    Entropy_after = (50/150) × 0 + (100/150) × 1.0 = 0.667 bits<br><br>
+                    
+                    <strong>Information Gain = Initial_entropy - Entropy_after</strong><br>
+                    IG = 1.585 - 0.667 = <strong>0.918 bits</strong><br>
+                    Reduction in uncertainty: 0.918/1.585 = <strong>58%</strong>
                 </div>
                 
-                <p>This split perfectly isolates Setosa, reducing uncertainty by 58%!</p>
+                <p style="margin-top: 15px;"><strong>Why is this the best split?</strong> It perfectly separates one entire class (Setosa) with a single question, 
+                achieving the highest possible information gain for any single split in this dataset!</p>
             </div>
             
             <!-- 3. The Decision Tree -->
